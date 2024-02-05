@@ -1092,6 +1092,27 @@ describe('conventional-commits-parser', () => {
         expect(commit.footer).toBe('Kills gh-1, #123\nother\nBREAKING AMEND: some breaking change')
       })
 
+      it('should not parse URLs with an anchor', () => {
+        const commit = customParser.parse(
+          'feat(scope): broadcast $destroy event on scope destruction\n'
+          + 'perf testing shows that in chrome this change adds 5-15% overhead.\n'
+          + 'when destroying 10k nested scopes where each scope has a $destroy listener [1].\n'
+          + '[1] https://secondUrl.com#287\n'
+          + 'killed #25\n'
+        )
+
+        expect(commit.references).toEqual([
+          {
+            action: 'killed',
+            owner: null,
+            repository: null,
+            issue: '25',
+            raw: '#25',
+            prefix: '#'
+          }
+        ])
+      })
+
       it('should add the subject as note if it match breakingHeaderPattern', () => {
         const parser = new CommitParser({
           headerPattern: /^(\w*)(?:\(([\w$.\-* ]*)\))?: (.*)$/,
